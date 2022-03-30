@@ -47,10 +47,10 @@ public class MixinNoiseChunkGenerator {
 
     private static final double NOISE_MAIN_FREQUENCY = 684.412 / 32768.0;
     private static final double BLEND_NOISE_RELATIVE_FREQUENCY = 256.0;
-    private static final double PRIMARY_NOISE_MAIN_AMPLITUDE = 64.0;
+    private static final double PRIMARY_NOISE_MAIN_AMPLITUDE = 128.0;
     private static final double BLEND_NOISE_MAIN_AMPLITUDE = 6.4;
     private static final int N_OCTAVES_PRIMARY = 6;
-    private static final int N_OCTAVES_BLEND = 3;
+    private static final int N_OCTAVES_BLEND = 4;
 
     private static final BlockState AIR = Blocks.AIR.getDefaultState();
 
@@ -141,9 +141,17 @@ public class MixinNoiseChunkGenerator {
             if (i < N_OCTAVES_PRIMARY) {
                 newNoiseOctaves1[i] = new DomainRotatedShelfNoise(randomSeed);
                 newNoiseOctaves2[i] = new DomainRotatedShelfNoise(randomSeed);
+            } else {
+
+                // Consume random anyway, to keep mostly the same world shapes regardless of octave count values.
+                new DomainRotatedShelfNoise(randomSeed);
+                new DomainRotatedShelfNoise(randomSeed);
+
             }
             if (i < N_OCTAVES_BLEND)
                 newNoiseOctavesBlend[i] = new DomainRotatedShelfNoise(randomSeed);
+            else
+                new DomainRotatedShelfNoise(randomSeed); // Consume random anyway.
         }
 
 
@@ -520,7 +528,7 @@ public class MixinNoiseChunkGenerator {
 
                     // Optimization: If the threshold was too big for the noise to kick in, we should be nowhere near placing a structure.
                     // Note: It would be technically ideal to apply this before noise, so the skipping can adapt to it.
-                    //       But the clamp makes things tricker and doesn't really create any issues in practice.
+                    //       But the clamp makes things tricker and this doesn't really create any issues in practice.
                     if (noiseSignValue != thresholdingValue) {
                         noiseSignValue = MathHelper.clamp(noiseSignValue / 200.0D, -1.0D, 1.0D);
 
